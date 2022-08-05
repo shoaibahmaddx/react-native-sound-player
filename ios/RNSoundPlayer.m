@@ -154,25 +154,31 @@ RCT_REMAP_METHOD(getInfo,
     if (self.avPlayer) {
         self.avPlayer = nil;
     }
-    
     NSString *soundFilePath = [[NSBundle mainBundle] pathForResource:name ofType:type];
-    
     if (soundFilePath == nil) {
-        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask, YES);
+        NSArray *paths =
+        NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask, YES);
         NSString *documentsDirectory = [paths objectAtIndex:0];
-        soundFilePath = [NSString stringWithFormat:@"%@.%@", [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%@",name]], type];
+        soundFilePath = [NSString stringWithFormat:@"%@.%@", [documentsDirectory
+                                                              stringByAppendingPathComponent:[NSString stringWithFormat:@"%@",name]], type];
+        
     }
+    
+    [[AVAudioSession sharedInstance]
+     setCategory:AVAudioSessionCategoryPlayback mode:AVAudioSessionModeDefault
+     options:AVAudioSessionCategoryOptionMixWithOthers error:nil];
+    [[AVAudioSession sharedInstance] setActive:false
+                                   withOptions:AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation error:nil];
     
     NSURL *soundFileURL = [NSURL fileURLWithPath:soundFilePath];
     self.player = [[AVAudioPlayer alloc] initWithContentsOfURL:soundFileURL error:nil];
     [self.player setDelegate:self];
     [self.player setNumberOfLoops:self.loopCount];
     [self.player prepareToPlay];
-    [[AVAudioSession sharedInstance]
-     setCategory: AVAudioSessionCategoryPlayback
-     error: nil];
-    [self sendEventWithName:EVENT_FINISHED_LOADING body:@{@"success": [NSNumber numberWithBool:true]}];
-    [self sendEventWithName:EVENT_FINISHED_LOADING_FILE body:@{@"success": [NSNumber numberWithBool:true], @"name": name, @"type": type}];
+    [self sendEventWithName:EVENT_FINISHED_LOADING body:@{@"success": [NSNumber
+                                                                       numberWithBool:true]}];
+    [self sendEventWithName:EVENT_FINISHED_LOADING_FILE body:@{@"success":
+                                                                   [NSNumber numberWithBool:true], @"name": name, @"type": type}];
 }
 
 - (void) prepareUrl:(NSString *)url {
