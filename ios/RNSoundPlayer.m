@@ -12,6 +12,7 @@ static NSString *const EVENT_FINISHED_LOADING = @"FinishedLoading";
 static NSString *const EVENT_FINISHED_LOADING_FILE = @"FinishedLoadingFile";
 static NSString *const EVENT_FINISHED_LOADING_URL = @"FinishedLoadingURL";
 static NSString *const EVENT_FINISHED_PLAYING = @"FinishedPlaying";
+static NSString *const EVENT_BEGAN_PLAYING = @"BeganPlaying";
 
 
 RCT_EXPORT_METHOD(playUrl:(NSString *)url) {
@@ -38,7 +39,7 @@ RCT_EXPORT_METHOD(loadSoundFile:(NSString *)name ofType:(NSString *)type) {
 }
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[EVENT_FINISHED_PLAYING, EVENT_FINISHED_LOADING, EVENT_FINISHED_LOADING_URL, EVENT_FINISHED_LOADING_FILE];
+    return @[EVENT_FINISHED_PLAYING, EVENT_FINISHED_LOADING, EVENT_FINISHED_LOADING_URL, EVENT_FINISHED_LOADING_FILE, EVENT_BEGAN_PLAYING];
 }
 
 RCT_EXPORT_METHOD(pause) {
@@ -147,6 +148,13 @@ RCT_REMAP_METHOD(getInfo,
 }
 
 - (void) itemDidFinishPlaying:(NSNotification *) notification {
+    
+    @try {
+        [[self player] removeObserver:self forKeyPath:@"rate" context:nil];
+    } @catch (NSException *exception) {
+        
+    }
+    
     [self sendEventWithName:EVENT_FINISHED_PLAYING body:@{@"success": [NSNumber numberWithBool:TRUE]}];
 }
 
@@ -175,6 +183,7 @@ RCT_REMAP_METHOD(getInfo,
     [self.player setDelegate:self];
     [self.player setNumberOfLoops:self.loopCount];
     [self.player prepareToPlay];
+    [[self player] addObserver:self forKeyPath:@"rate" options:NSKeyValueObservingOptionNew context:nil];
     [self sendEventWithName:EVENT_FINISHED_LOADING body:@{@"success": [NSNumber
                                                                        numberWithBool:true]}];
     [self sendEventWithName:EVENT_FINISHED_LOADING_FILE body:@{@"success":
@@ -195,6 +204,17 @@ RCT_REMAP_METHOD(getInfo,
     [self.player prepareToPlay];
     [self sendEventWithName:EVENT_FINISHED_LOADING body:@{@"success": [NSNumber numberWithBool:true]}];
     [self sendEventWithName:EVENT_FINISHED_LOADING_URL body: @{@"success": [NSNumber numberWithBool:true], @"url": url}];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    if([keyPath isEqualToString:@"rate"]) {
+        if(self.player != nil) {
+            if(self.player.rate > 0) {
+                [self sendEventWithName:EVENT_BEGAN_PLAYING body:nil];
+            }
+        }
+    }
 }
 
 RCT_EXPORT_MODULE();
