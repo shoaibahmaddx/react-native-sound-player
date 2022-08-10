@@ -64,7 +64,8 @@ export default {
       | "FinishedLoading"
       | "FinishedPlaying"
       | "FinishedLoadingURL"
-      | "FinishedLoadingFile",
+      | "FinishedLoadingFile"
+      | "BeganPlaying",
     callback: Function
   ) => _soundPlayerEmitter.addListener(eventName, callback),
 

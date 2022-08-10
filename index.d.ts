@@ -5,7 +5,8 @@ declare module "react-native-sound-player" {
     | "FinishedLoading"
     | "FinishedPlaying"
     | "FinishedLoadingURL"
-    | "FinishedLoadingFile";
+    | "FinishedLoadingFile"
+    | "BeganPlaying";
 
   export type SoundPlayerEventData = {
     success?: boolean;
