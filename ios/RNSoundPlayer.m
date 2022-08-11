@@ -45,6 +45,7 @@ RCT_EXPORT_METHOD(loadSoundFile:(NSString *)name ofType:(NSString *)type) {
 RCT_EXPORT_METHOD(pause) {
     if (self.player != nil) {
         [self.player pause];
+        self.player.currentTime = 0;
     }
     if (self.avPlayer != nil) {
         [self.avPlayer pause];
@@ -63,6 +64,7 @@ RCT_EXPORT_METHOD(resume) {
 RCT_EXPORT_METHOD(stop) {
     if (self.player != nil) {
         [self.player stop];
+        self.player.currentTime = 0;
     }
     if (self.avPlayer != nil) {
         [self.avPlayer pause];
@@ -183,6 +185,7 @@ RCT_REMAP_METHOD(getInfo,
     [self.player setDelegate:self];
     [self.player setNumberOfLoops:self.loopCount];
     [self.player prepareToPlay];
+    [self.player setVolume:1.0];
     [[self player] addObserver:self forKeyPath:@"rate" options:NSKeyValueObservingOptionNew context:nil];
     [self sendEventWithName:EVENT_FINISHED_LOADING body:@{@"success": [NSNumber
                                                                        numberWithBool:true]}];
